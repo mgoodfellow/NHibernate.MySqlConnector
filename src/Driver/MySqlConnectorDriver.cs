@@ -73,6 +73,6 @@ namespace NHibernate.MySqlConnector.Driver
 		/// <inheritdoc />
 		public override DateTime MinDate => new DateTime(1000, 1, 1);
 
-		System.Type IEmbeddedBatcherFactoryProvider.BatcherFactoryClass => typeof(GenericBatchingBatcherFactory);
+		System.Type IEmbeddedBatcherFactoryProvider.BatcherFactoryClass => typeof(MySqlClientBatchingBatcherFactory);
 	}
 }
