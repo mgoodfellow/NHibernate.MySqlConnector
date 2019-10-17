@@ -84,26 +84,23 @@ namespace NHibernate.MySqlConnector.Driver
 
     public class MySqlConnectorSqlCommandSet : IDisposable
     {
-        private MySqlDataAdapter mySqlDataAdapter;
         private MySqlBatch mySqlBatch;
-        private int countOfCommands;
+        public int CountOfCommands { get; private set; }
 
-        public MySqlConnectorSqlCommandSet(int batchSize)
+        public MySqlConnectorSqlCommandSet(DbConnection dbConnection)
         {
-            mySqlDataAdapter = new MySqlDataAdapter { UpdateBatchSize = batchSize };
-            mySqlBatch = new MySqlBatch();
+            mySqlBatch = new MySqlBatch((MySqlConnection)dbConnection);
         }
 
         public void Append(DbCommand command)
         {
             mySqlBatch.BatchCommands.Add(new MySqlBatchCommand(command.CommandText));
-            countOfCommands++;
+            CountOfCommands++;
         }
 
         public void Dispose()
         {
             mySqlBatch.Dispose();
-            mySqlDataAdapter.Dispose();
         }
 
         public int ExecuteNonQuery()
@@ -125,8 +122,6 @@ namespace NHibernate.MySqlConnector.Driver
 
             return await mySqlBatch.ExecuteNonQueryAsync(cancellationToken);
         }
-
-        public int CountOfCommands => countOfCommands;
     }
 
     public class MySqlConnectorBatchingBatcherFactory : IBatcherFactory
@@ -300,7 +295,7 @@ namespace NHibernate.MySqlConnector.Driver
 
         private MySqlConnectorSqlCommandSet CreateConfiguredBatch()
         {
-            return new MySqlConnectorSqlCommandSet(batchSize);
+            return new MySqlConnectorSqlCommandSet(ConnectionManager.GetConnection());
         }
 
         private void ClearCurrentBatch()
